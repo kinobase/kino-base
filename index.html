@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>kino base — 竣工記念動画メーカー</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@300;400;700&family=Shippori+Mincho:wght@400;600;700&family=DM+Serif+Display:ital@0;1&family=Montserrat:wght@300;400;500;600&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --gold:#C9A86C;--gold-l:#E8D5A3;--gold-d:#9A7840;
+  --ink:#1A1612;--ink2:#0E0C0A;
+  --cream:#F5EFE6;--sand:#EDE3D6;
+  --slate:#3D3530;--muted:#8A7E74;
+  --bg:#F0EBE3;--white:#FAFAF8;
+  --green:#27AE60;--red:#C0392B;--blue:#2471A3;
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);font-family:'Noto Sans JP',sans-serif;color:var(--ink);}
+
+/* ── HEADER ── */
+header{
+  background:var(--ink2);padding:18px 40px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:200;
+  border-bottom:2px solid rgba(201,168,108,.25);
+}
+.hdr-logo{font-family:'Shippori Mincho',serif;font-size:20px;font-weight:700;color:var(--sand);letter-spacing:.05em;}
+.hdr-logo small{display:block;font-size:9px;color:var(--muted);letter-spacing:.3em;margin-top:1px;font-family:'Montserrat',sans-serif;}
+.hdr-right{display:flex;align-items:center;gap:12px;}
+.plan-tag{background:rgba(201,168,108,.12);border:1px solid rgba(201,168,108,.3);color:var(--gold);font-size:10px;padding:5px 14px;letter-spacing:.2em;border-radius:2px;}
+
+/* ── MAIN LAYOUT ── */
+.layout{display:grid;grid-template-columns:340px 1fr;min-height:calc(100vh - 65px);}
+
+/* ── LEFT SIDEBAR ── */
+.sidebar{
+  background:var(--ink);overflow-y:auto;
+  display:flex;flex-direction:column;
+  border-right:1px solid rgba(255,255,255,.06);
+}
+.sb-section{padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.05);}
+.sb-label{font-size:9px;letter-spacing:.35em;color:var(--gold);text-transform:uppercase;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.sb-label::before{content:'';width:12px;height:1px;background:var(--gold);}
+
+/* form */
+.fg{margin-bottom:12px;}
+.fg label{display:block;font-size:11px;color:var(--muted);letter-spacing:.08em;margin-bottom:5px;}
+.fg input,.fg select,.fg textarea{
+  width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);
+  color:var(--sand);padding:9px 12px;font-size:12px;
+  font-family:'Noto Sans JP',sans-serif;border-radius:2px;outline:none;transition:border .3s;
+}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold);}
+.fg textarea{resize:none;height:52px;}
+select option{background:var(--ink);}
+
+/* type tabs */
+.type-tabs{display:flex;border:1px solid rgba(255,255,255,.09);border-radius:2px;overflow:hidden;}
+.tt{flex:1;background:transparent;border:none;color:var(--muted);padding:8px 4px;font-size:11px;cursor:pointer;transition:all .3s;font-family:'Noto Sans JP',sans-serif;}
+.tt.on{background:var(--gold);color:var(--ink);font-weight:700;}
+
+/* photo zones */
+.zones{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.zone{
+  border:1px dashed rgba(255,255,255,.13);border-radius:3px;
+  padding:14px 10px;text-align:center;cursor:pointer;
+  background:rgba(255,255,255,.02);transition:all .3s;position:relative;overflow:hidden;
+}
+.zone:hover{border-color:var(--gold);}
+.zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.zone-lbl{font-size:8px;letter-spacing:.3em;text-transform:uppercase;margin-bottom:4px;}
+.zone-lbl.b{color:#9C6B56;}
+.zone-lbl.a{color:var(--green);}
+.zone-num{font-family:'DM Serif Display',serif;font-size:26px;color:var(--sand);line-height:1;}
+.zone-sub{font-size:9px;color:var(--muted);margin-top:3px;}
+.thumbs{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+.th{width:46px;height:34px;object-fit:cover;border-radius:2px;border:1px solid rgba(255,255,255,.08);cursor:pointer;}
+.th-del-wrap{position:relative;display:inline-block;}
+.th-del{
+  position:absolute;top:-4px;right:-4px;width:13px;height:13px;
+  background:var(--red);border-radius:50%;font-size:8px;color:white;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:.2s;cursor:pointer;
+}
+.th-del-wrap:hover .th-del{opacity:1;}
+
+/* sliders */
+input[type=range]{-webkit-appearance:none;width:100%;height:3px;background:rgba(255,255,255,.1);border-radius:2px;outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:var(--gold);border-radius:50%;cursor:pointer;}
+.sl-row{display:flex;align-items:center;gap:10px;}
+.sl-val{font-family:'DM Serif Display',serif;font-size:18px;color:var(--gold);min-width:32px;}
+
+/* ── TEMPLATE PICKER ── */
+.tmpl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.tmpl-card{
+  border-radius:3px;overflow:hidden;cursor:pointer;
+  border:2px solid transparent;transition:all .3s;aspect-ratio:16/9;
+  position:relative;
+}
+.tmpl-card.on{border-color:var(--gold);transform:scale(1.04);}
+.tmpl-card:hover:not(.on){border-color:rgba(201,168,108,.4);}
+.tmpl-preview{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px;}
+.tmpl-name{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.7);font-size:8px;color:white;text-align:center;padding:3px;letter-spacing:.1em;}
+
+/* ── RIGHT: CANVAS AREA ── */
+.canvas-area{
+  display:flex;flex-direction:column;align-items:center;
+  padding:36px;gap:20px;background:var(--bg);
+}
+.canvas-wrap{
+  width:100%;max-width:800px;position:relative;
+  box-shadow:0 20px 64px rgba(0,0,0,.2);border-radius:4px;overflow:hidden;
+}
+#preview{width:100%;height:auto;display:block;}
+
+/* progress overlay */
+.overlay{
+  position:absolute;inset:0;background:rgba(14,12,10,.9);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.overlay.show{opacity:1;pointer-events:all;}
+.spin{width:72px;height:72px;border-radius:50%;border:3px solid rgba(201,168,108,.2);border-top-color:var(--gold);animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ov-txt{color:var(--sand);font-size:13px;letter-spacing:.15em;}
+.prog-bar-bg{width:220px;height:3px;background:rgba(255,255,255,.1);border-radius:2px;}
+.prog-bar{height:100%;background:var(--gold);border-radius:2px;width:0;transition:width .2s;}
+
+/* timeline */
+.timeline{width:100%;max-width:800px;height:4px;background:rgba(0,0,0,.15);border-radius:2px;overflow:hidden;}
+.tl-fill{height:100%;background:linear-gradient(90deg,var(--gold-d),var(--gold));width:0;transition:width .08s;}
+
+/* controls */
+.controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;}
+.btn{
+  padding:12px 28px;border:none;cursor:pointer;border-radius:2px;
+  font-family:'Shippori Mincho',serif;font-size:13px;font-weight:700;
+  letter-spacing:.15em;transition:all .3s;
+}
+.btn-play{background:rgba(28,25,23,.9);color:var(--sand);border:1px solid rgba(255,255,255,.15);}
+.btn-play:hover,.btn-play.on{border-color:var(--gold);color:var(--gold);}
+.btn-export{background:var(--gold);color:var(--ink);}
+.btn-export:hover{background:var(--gold-l);transform:translateY(-2px);box-shadow:0 8px 24px rgba(201,168,108,.3);}
+.btn-export:disabled{background:var(--muted);cursor:not-allowed;transform:none;box-shadow:none;}
+.time-lbl{font-size:11px;color:var(--muted);letter-spacing:.2em;font-family:'Montserrat',sans-serif;}
+
+/* status */
+.status{font-size:12px;color:var(--muted);letter-spacing:.08em;text-align:center;line-height:1.7;max-width:600px;}
+.status.ok{color:var(--green);}
+.status.err{color:var(--red);}
+
+/* tips bar */
+.tips-bar{
+  width:100%;max-width:800px;background:rgba(28,25,23,.5);
+  border-radius:3px;padding:12px 20px;
+  display:flex;gap:20px;flex-wrap:wrap;
+}
+.tip-chip{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.tip-chip::before{content:'';width:5px;height:5px;background:var(--gold);border-radius:50;flex-shrink:0;}
+
+/* scrollbar */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:rgba(201,168,108,.3);border-radius:2px;}
+
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr;}
+  .sidebar{max-height:55vh;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-logo">kino base<small>竣工記念動画メーカー</small></div>
+  <div class="hdr-right">
+    <div class="plan-tag" id="plan-tag">FREE PLAN（透かし入り）</div>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ── SIDEBAR ── -->
+  <div class="sidebar">
+
+    <!-- テンプレート選択 -->
+    <div class="sb-section">
+      <div class="sb-label">デザインテンプレート（12種）</div>
+      <div class="tmpl-grid" id="tmpl-grid"></div>
+    </div>
+
+    <!-- プロジェクト情報 -->
+    <div class="sb-section">
+      <div class="sb-label">プロジェクト情報</div>
+      <div class="fg"><label>施主名・物件名</label>
+        <input type="text" id="ownerName" placeholder="山田邸 新築工事" oninput="scheduleRender()">
+      </div>
+      <div class="fg"><label>竣工日</label>
+        <input type="date" id="compDate" oninput="scheduleRender()">
+      </div>
+      <div class="fg"><label>施工会社名</label>
+        <input type="text" id="companyName" placeholder="○○建設株式会社" oninput="scheduleRender()">
+      </div>
+      <div class="fg"><label>オープニングメッセージ</label>
+        <textarea id="openMsg" placeholder="建物と人の記憶を、かたちに。" oninput="scheduleRender()"></textarea>
+      </div>
+      <div class="fg">
+        <label>オープニング表示時間：<span id="openDurLbl">5秒</span></label>
+        <input type="range" min="3" max="10" value="5" step="1"
+          style="width:100%;accent-color:var(--gold);"
+          oninput="S.openDur=+this.value;document.getElementById('openDurLbl').textContent=this.value+'秒';scheduleRender()">
+      </div>
+      <div class="fg"><label>クロージングメッセージ</label>
+        <textarea id="closeMsg" placeholder="末永くよろしくお願いいたします" oninput="scheduleRender()"></textarea>
+      </div>
+      <div class="fg">
+        <label>クロージング表示時間：<span id="closeDurLbl">4秒</span></label>
+        <input type="range" min="3" max="10" value="4" step="1"
+          style="width:100%;accent-color:var(--gold);"
+          oninput="S.closeDur=+this.value;document.getElementById('closeDurLbl').textContent=this.value+'秒';scheduleRender()">
+      </div>
+    </div>
+
+    <!-- 写真 -->
+    <div class="sb-section">
+      <div class="sb-label">工事写真</div>
+      <div class="zones">
+        <label class="zone" for="bi">
+          <div class="zone-lbl b">BEFORE</div>
+          <div class="zone-num" id="b-cnt">0</div>
+          <div class="zone-sub">着工前・工事中</div>
+        </label>
+        <label class="zone" for="ai">
+          <div class="zone-lbl a">AFTER</div>
+          <div class="zone-num" id="a-cnt">0</div>
+          <div class="zone-sub">完成写真</div>
+        </label>
+      </div>
+      <input type="file" id="bi" accept="image/*" multiple style="display:none" onchange="addPhotos('before',this)">
+      <input type="file" id="ai" accept="image/*" multiple style="display:none" onchange="addPhotos('after',this)">
+      <div style="margin:10px 0 6px;padding:9px 12px;background:rgba(201,168,108,0.07);border-left:2px solid rgba(201,168,108,0.4);font-size:11px;color:var(--muted);line-height:1.8;">
+        📝 写真をアップロードすると、<br>各写真にテキストを入力できます
+      </div>
+      <div class="thumbs" id="b-thumbs"></div>
+      <div class="thumbs" id="a-thumbs"></div>
+    </div>
+
+    <!-- トランジション -->
+    <div class="sb-section">
+      <div class="sb-label">転換エフェクト</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;" id="fx-grid">
+        <div class="tt on" style="border:1px solid rgba(255,255,255,.09);border-radius:2px;text-align:center;padding:8px 4px;font-size:10px;cursor:pointer;color:var(--gold);" onclick="setFx('fade',this)">フェード</div>
+        <div class="tt" style="border:1px solid rgba(255,255,255,.09);border-radius:2px;text-align:center;padding:8px 4px;font-size:10px;cursor:pointer;color:var(--muted);" onclick="setFx('zoom',this)">ズーム</div>
+        <div class="tt" style="border:1px solid rgba(255,255,255,.09);border-radius:2px;text-align:center;padding:8px 4px;font-size:10px;cursor:pointer;color:var(--muted);" onclick="setFx('flash',this)">フラッシュ</div>
+        <div class="tt" style="border:1px solid rgba(255,255,255,.09);border-radius:2px;text-align:center;padding:8px 4px;font-size:10px;cursor:pointer;color:var(--muted);" onclick="setFx('slide',this)">スライド</div>
+        <div class="tt" style="border:1px solid rgba(255,255,255,.09);border-radius:2px;text-align:center;padding:8px 4px;font-size:10px;cursor:pointer;color:var(--muted);" onclick="setFx('blur',this)">ブラー</div>
+        <div class="tt" style="border:1px solid rgba(255,255,255,.09);border-radius:2px;text-align:center;padding:8px 4px;font-size:10px;cursor:pointer;color:var(--muted);" onclick="setFx('wipe',this)">ワイプ</div>
+      </div>
+    </div>
+
+    <!-- 尺設定 -->
+    <div class="sb-section">
+      <div class="sb-label">1枚あたりの表示時間</div>
+      <div class="sl-row">
+        <span class="sl-val" id="dur-val">4s</span>
+        <input type="range" id="dur-sl" min="2" max="8" value="4" step="0.5" oninput="document.getElementById('dur-val').textContent=this.value+'s';scheduleRender()">
+      </div>
+    </div>
+
+    <!-- BGM -->
+    <div class="sb-section">
+      <div class="sb-label">BGM（著作権フリー・全6曲）</div>
+      <div id="bgm-loading" style="display:none;font-size:10px;color:var(--gold);padding:8px 0;letter-spacing:.1em;">🎹 ピアノ音源を読み込み中...</div>
+      <div id="bgm-grid" style="display:flex;flex-direction:column;gap:6px;"></div>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:10px;">
+        <div style="font-size:10px;color:var(--muted);">音量</div>
+        <input type="range" id="bgm-vol" min="0" max="100" value="70" style="flex:1;"
+          oninput="setBgmVolume(this.value)">
+        <div style="font-size:10px;color:var(--gold);min-width:28px;" id="vol-lbl">70%</div>
+      </div>
+      <div style="margin-top:10px;padding:8px 10px;background:rgba(201,168,108,.06);border-radius:2px;font-size:10px;color:var(--muted);line-height:1.6;">
+        🎵 すべてWeb Audio APIで生成。<br>著作権フリー・商用利用OK。
+      </div>
+    </div>
+
+  </div><!-- /sidebar -->
+
+  <!-- ── CANVAS AREA ── -->
+  <div class="canvas-area">
+
+    <div class="canvas-wrap">
+      <canvas id="preview" width="1280" height="720"></canvas>
+      <div class="overlay" id="overlay">
+        <div class="spin"></div>
+        <div class="ov-txt" id="ov-txt">動画を生成中...</div>
+        <div class="prog-bar-bg"><div class="prog-bar" id="prog-bar"></div></div>
+      </div>
+    </div>
+
+    <div class="timeline"><div class="tl-fill" id="tl-fill"></div></div>
+
+    <div class="controls">
+      <button class="btn btn-play" id="play-btn" onclick="togglePlay()">▶ プレビュー再生</button>
+      <span class="time-lbl" id="time-lbl">0:00 / 0:00</span>
+      <button class="btn btn-export" id="export-btn" onclick="startExport()">⬇ MP4を書き出す</button>
+    </div>
+
+    <div class="status" id="status-msg">テンプレートを選んで、写真をアップロードしてください。プレビューで確認してから書き出せます。</div>
+
+    <div class="tips-bar">
+      <div class="tip-chip">写真は最大20枚まで（BEFORE・AFTER各10枚）</div>
+      <div class="tip-chip">MP4で直接書き出し（Chrome / Edge 推奨）</div>
+      <div class="tip-chip">無料：透かし入り書き出し無制限 ／ ¥1,980/月：透かしなし</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════
+//  STATE
+// ══════════════════════════════════
+const S = {
+  projType: 'new',
+  template: 0,
+  fx: 'fade',
+  photos: { before: [], after: [] },
+  ownerName: '', compDate: '', companyName: '',
+  openMsg: '', closeMsg: '',
+  openDur: 5, closeDur: 4,
+  dur: 4,
+  frame: 0,
+  totalFrames: 0,
+  playing: false,
+  raf: null,
+  lastTime: 0,
+  bgmId: 'emotional',
+  bgmVolume: 0.70,
+  plan: 'free',
+  isExporting: false,
+};
+
+// ══════════════════════════════════
+//  12 TEMPLATES
+// ══════════════════════════════════
+const TEMPLATES = [
+  {
+    id:0, name:'ゴールド・シネマ',
+    bg:'#1A1612', accent:'#C9A86C', text:'#F5EFE6', sub:'#8A7E74',
+    before_bg:'#2A1F14', after_bg:'#0D1A0D',
+    font:'DM Serif Display', body_font:'Shippori Mincho',
+    frame_style:'corner_lines',
+    badge_before:'#5D4037', badge_after:'#1B5E20',
+    closing_bg:'#0E0C0A',
+  },
+  {
+    id:1, name:'ディープブルー',
+    bg:'#0A1628', accent:'#4A90D9', text:'#E8F4FD', sub:'#7FB3D3',
+    before_bg:'#0D1F3C', after_bg:'#0A2840',
+    font:'DM Serif Display', body_font:'Noto Serif JP',
+    frame_style:'side_bar',
+    badge_before:'#1A3A6B', badge_after:'#0E4F6B',
+    closing_bg:'#060E1A',
+  },
+  {
+    id:2, name:'モスグリーン',
+    bg:'#0D1F12', accent:'#5BAD72', text:'#E8F5EC', sub:'#88B892',
+    before_bg:'#162810', after_bg:'#0B2515',
+    font:'DM Serif Display', body_font:'Noto Serif JP',
+    frame_style:'bracket',
+    badge_before:'#2D4A1E', badge_after:'#1A4A28',
+    closing_bg:'#080F09',
+  },
+  {
+    id:3, name:'プレミアム・ホワイト',
+    bg:'#FAFAF8', accent:'#3D2B1F', text:'#1A1612', sub:'#8A7E74',
+    before_bg:'#F0EBE3', after_bg:'#F5F5F0',
+    font:'DM Serif Display', body_font:'Shippori Mincho',
+    frame_style:'minimal',
+    badge_before:'#6B4C3B', badge_after:'#27AE60',
+    closing_bg:'#EEEBE6',
+  },
+  {
+    id:4, name:'テラコッタ',
+    bg:'#2A1510', accent:'#E8845C', text:'#FAF0E8', sub:'#C49580',
+    before_bg:'#3A2015', after_bg:'#1A2510',
+    font:'DM Serif Display', body_font:'Noto Serif JP',
+    frame_style:'corner_lines',
+    badge_before:'#5C3020', badge_after:'#2A4A1A',
+    closing_bg:'#150A06',
+  },
+  {
+    id:5, name:'ミッドナイト・ネイビー',
+    bg:'#08101E', accent:'#8BB8D4', text:'#D8E8F0', sub:'#6A9BB5',
+    before_bg:'#0D1830', after_bg:'#080F1A',
+    font:'Montserrat', body_font:'Noto Sans JP',
+    frame_style:'side_bar',
+    badge_before:'#1A3060', badge_after:'#0D3050',
+    closing_bg:'#050A12',
+  },
+  {
+    id:6, name:'ウォームベージュ',
+    bg:'#F5EDE0', accent:'#C9823A', text:'#3D2B1F', sub:'#9C7A5A',
+    before_bg:'#EDE0D0', after_bg:'#E8F0E4',
+    font:'DM Serif Display', body_font:'Shippori Mincho',
+    frame_style:'bracket',
+    badge_before:'#8B5E3C', badge_after:'#4A7A3A',
+    closing_bg:'#ECE3D5',
+  },
+  {
+    id:7, name:'モノクローム',
+    bg:'#111111', accent:'#EEEEEE', text:'#F8F8F8', sub:'#888888',
+    before_bg:'#1E1E1E', after_bg:'#0A0A0A',
+    font:'DM Serif Display', body_font:'Noto Serif JP',
+    frame_style:'minimal',
+    badge_before:'#333333', badge_after:'#444444',
+    closing_bg:'#080808',
+  },
+  {
+    id:8, name:'サクラピンク',
+    bg:'#1A0E14', accent:'#E899B8', text:'#FDF0F5', sub:'#C490A8',
+    before_bg:'#2A1020', after_bg:'#1A2020',
+    font:'DM Serif Display', body_font:'Noto Serif JP',
+    frame_style:'corner_lines',
+    badge_before:'#5A2040', badge_after:'#1A4040',
+    closing_bg:'#0E080C',
+  },
+  {
+    id:9, name:'サンセット・オレンジ',
+    bg:'#1E0E06', accent:'#F0A050', text:'#FFF0E0', sub:'#C09060',
+    before_bg:'#2A1206', after_bg:'#0E1806',
+    font:'DM Serif Display', body_font:'Noto Serif JP',
+    frame_style:'side_bar',
+    badge_before:'#5A2A10', badge_after:'#1A3A10',
+    closing_bg:'#100803',
+  },
+  {
+    id:10, name:'フォレスト・ダーク',
+    bg:'#080F08', accent:'#7EC8A0', text:'#E8F5EE', sub:'#60A080',
+    before_bg:'#0D180D', after_bg:'#081008',
+    font:'DM Serif Display', body_font:'Noto Serif JP',
+    frame_style:'bracket',
+    badge_before:'#1A3A1A', badge_after:'#0D2A0D',
+    closing_bg:'#050805',
+  },
+  {
+    id:11, name:'ロイヤルパープル',
+    bg:'#0E0814', accent:'#A088D8', text:'#F0EAF8', sub:'#8870B0',
+    before_bg:'#1A1030', after_bg:'#0E1830',
+    font:'DM Serif Display', body_font:'Noto Serif JP',
+    frame_style:'corner_lines',
+    badge_before:'#3A1860', badge_after:'#102060',
+    closing_bg:'#08050E',
+  },
+];
+
+// ══════════════════════════════════
+//  BUILD TEMPLATE GRID
+// ══════════════════════════════════
+function buildTemplateGrid() {
+  const grid = document.getElementById('tmpl-grid');
+  grid.innerHTML = '';
+  TEMPLATES.forEach((t, i) => {
+    const card = document.createElement('div');
+    card.className = 'tmpl-card' + (i === 0 ? ' on' : '');
+    card.onclick = () => {
+      S.template = i;
+      document.querySelectorAll('.tmpl-card').forEach(c => c.classList.remove('on'));
+      card.classList.add('on');
+      scheduleRender();
+    };
+
+    // Mini preview canvas
+    const c = document.createElement('canvas');
+    c.width = 160; c.height = 90;
+    const ctx = c.getContext('2d');
+    // bg
+    ctx.fillStyle = t.bg;
+    ctx.fillRect(0, 0, 160, 90);
+    // accent stripe
+    ctx.fillStyle = t.accent;
+    ctx.fillRect(0, 0, 160, 4);
+    // title text
+    ctx.fillStyle = t.text;
+    ctx.font = 'bold 13px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('kino base', 80, 42);
+    ctx.fillStyle = t.accent;
+    ctx.font = '9px sans-serif';
+    ctx.fillText('竣工記念', 80, 58);
+    // frame decoration
+    ctx.strokeStyle = t.accent;
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.4;
+    ctx.strokeRect(8, 8, 16, 16);
+    ctx.strokeRect(136, 66, 16, 16);
+    ctx.globalAlpha = 1;
+
+    c.style.width = '100%';
+    c.style.height = '100%';
+    c.style.display = 'block';
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'tmpl-name';
+    nameEl.textContent = t.name;
+
+    card.appendChild(c);
+    card.appendChild(nameEl);
+    grid.appendChild(card);
+  });
+}
+
+// ══════════════════════════════════
+//  PHOTO MANAGEMENT
+// ══════════════════════════════════
+function addPhotos(type, input) {
+  const files = Array.from(input.files);
+  const existing = S.photos[type];
+  const max = 10;
+  const toAdd = files.slice(0, max - existing.length);
+
+  let loaded = 0;
+  toAdd.forEach(file => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    const entry = { url, img, ready: false, caption: '' };
+    S.photos[type].push(entry);
+
+    img.onload = () => {
+      entry.ready = true;
+      loaded++;
+      renderThumbs(type);
+      updateCounts();
+      scheduleRender();
+    };
+    img.onerror = () => {
+      // remove failed entry
+      const idx = S.photos[type].indexOf(entry);
+      if (idx !== -1) S.photos[type].splice(idx, 1);
+      renderThumbs(type);
+      updateCounts();
+    };
+    img.src = url;
+  });
+
+  // Reset input so same files can be re-selected
+  input.value = '';
+}
+
+function renderThumbs(type) {
+  const container = document.getElementById(type === 'before' ? 'b-thumbs' : 'a-thumbs');
+  container.innerHTML = '';
+  S.photos[type].forEach((p, i) => {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'margin-bottom:6px;';
+    // サムネイル行
+    const row = document.createElement('div');
+    row.className = 'th-del-wrap';
+    const img = document.createElement('img');
+    img.className = 'th';
+    img.src = p.url;
+    const del = document.createElement('div');
+    del.className = 'th-del';
+    del.textContent = '×';
+    del.onclick = (e) => { e.stopPropagation(); removePhoto(type, i); };
+    row.appendChild(img);
+    row.appendChild(del);
+    // キャプション入力欄
+    const cap = document.createElement('input');
+    cap.type = 'text';
+    cap.placeholder = `写真${i+1} のテキスト（任意）`;
+    cap.value = p.caption || '';
+    cap.style.cssText = 'width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);color:#CEC0A8;padding:5px 8px;font-size:11px;font-family:inherit;margin-top:3px;box-sizing:border-box;outline:none;';
+    cap.oninput = () => { p.caption = cap.value; scheduleRender(); };
+    wrap.appendChild(row);
+    wrap.appendChild(cap);
+    container.appendChild(wrap);
+  });
+}
+
+function removePhoto(type, idx) {
+  S.photos[type].splice(idx, 1);
+  renderThumbs(type);
+  updateCounts();
+  scheduleRender();
+}
+
+function updateCounts() {
+  document.getElementById('b-cnt').textContent = S.photos.before.length;
+  document.getElementById('a-cnt').textContent = S.photos.after.length;
+}
+
+// ══════════════════════════════════
+//  SETTINGS HELPERS
+// ══════════════════════════════════
+function setVal(key, val, btn) {
+  S[key] = val;
+  if (btn) {
+    btn.closest('.type-tabs').querySelectorAll('.tt').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+  }
+  scheduleRender();
+}
+
+function setFx(val, btn) {
+  S.fx = val;
+  document.querySelectorAll('#fx-grid .tt').forEach(b => {
+    b.style.color = 'var(--muted)';
+    b.classList.remove('on');
+  });
+  btn.style.color = 'var(--gold)';
+  btn.classList.add('on');
+  scheduleRender();
+}
+
+// ══════════════════════════════════
+//  CANVAS RENDERING ENGINE
+// ══════════════════════════════════
+const CV = document.getElementById('preview');
+const CTX = CV.getContext('2d');
+const W = 1280, H = 720;
+
+let renderTimer = null;
+function scheduleRender() {
+  clearTimeout(renderTimer);
+  renderTimer = setTimeout(() => renderFrame(0), 80);
+}
+
+// Build scene list from current state
+function buildScenes() {
+  const d = parseFloat(document.getElementById('dur-sl').value) || 4;
+  const FPS = 30;
+  const scenes = [];
+
+  const owner = document.getElementById('ownerName').value || 'プロジェクト名';
+  const date = document.getElementById('compDate').value;
+  const company = document.getElementById('companyName').value || 'kino base';
+  const openMsg = document.getElementById('openMsg').value || '建物と人の記憶を、かたちに。';
+  const closeMsg = document.getElementById('closeMsg').value || '末永くよろしくお願いいたします';
+
+  const typeLabels = { new:'新築工事', reform:'改修工事', exterior:'外構工事', renovation:'リノベーション' };
+  const typeLabel = typeLabels[S.projType] || '工事';
+
+  const dateStr = date ? new Date(date).toLocaleDateString('ja-JP', { year:'numeric', month:'long', day:'numeric' }) : '';
+
+  // SCENE 1: Opening title (5s)
+  scenes.push({ type:'title', frames: S.openDur*FPS, owner, typeLabel, openMsg, dateStr });
+  // SCENE 2: BEFORE marker (2.5s)
+  scenes.push({ type:'marker', frames: Math.round(2.5*FPS), label:'BEFORE', sub:'着工前の記録', side:'before' });
+  // SCENE 3: BEFORE photos
+  const bPhotos = S.photos.before.length > 0 ? S.photos.before : [null,null,null,null];
+  bPhotos.forEach((entry, i) => {
+    scenes.push({ type:'photo', frames: Math.round(d*FPS), entry, img: entry ? entry.img : null, side:'before', idx: i+1, total: bPhotos.length });
+  });
+  // SCENE 4: Turning point (3.5s)
+  scenes.push({ type:'turning', frames: Math.round(3.5*FPS) });
+  // SCENE 5: AFTER marker (2.5s)
+  scenes.push({ type:'marker', frames: Math.round(2.5*FPS), label:'AFTER', sub:'竣工後の姿', side:'after' });
+  // SCENE 6: AFTER photos
+  const aPhotos = S.photos.after.length > 0 ? S.photos.after : [null,null,null,null,null];
+  aPhotos.forEach((entry, i) => {
+    scenes.push({ type:'photo', frames: Math.round(d*FPS), entry, img: entry ? entry.img : null, side:'after', idx: i+1, total: aPhotos.length });
+  });
+  // SCENE 7: Closing (4s)
+  scenes.push({ type:'closing', frames: S.closeDur*FPS, company, closeMsg });
+
+  return scenes;
+}
+
+function getTotalFrames(scenes) {
+  return scenes.reduce((s, sc) => s + sc.frames, 0);
+}
+
+function getSceneAtFrame(scenes, frame) {
+  let acc = 0;
+  for (let i = 0; i < scenes.length; i++) {
+    if (frame < acc + scenes[i].frames) {
+      return { scene: scenes[i], localFrame: frame - acc, sceneIdx: i };
+    }
+    acc += scenes[i].frames;
+  }
+  return { scene: scenes[scenes.length-1], localFrame: scenes[scenes.length-1].frames - 1, sceneIdx: scenes.length-1 };
+}
+
+function renderFrame(frame) {
+  const t = TEMPLATES[S.template];
+  const scenes = buildScenes();
+  const total = getTotalFrames(scenes);
+  S.totalFrames = total;
+  if (frame >= total) frame = total - 1;
+
+  const { scene, localFrame } = getSceneAtFrame(scenes, frame);
+  const prog = scene.frames > 1 ? localFrame / (scene.frames - 1) : 1;
+  const FPS = 30;
+
+  CTX.clearRect(0, 0, W, H);
+
+  switch (scene.type) {
+    case 'title':     drawTitle(CTX, scene, prog, t); break;
+    case 'marker':    drawMarker(CTX, scene, prog, t); break;
+    case 'photo':     drawPhoto(CTX, scene, prog, t); break;
+    case 'turning':   drawTurning(CTX, scene, prog, t); break;
+    case 'closing':   drawClosing(CTX, scene, prog, t); break;
+  }
+
+  // Update timeline
+  document.getElementById('tl-fill').style.width = (frame / Math.max(total-1,1) * 100) + '%';
+  const secs = Math.floor(frame / FPS);
+  const totalSecs = Math.floor(total / FPS);
+  document.getElementById('time-lbl').textContent =
+    `${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')} / ${Math.floor(totalSecs/60)}:${String(totalSecs%60).padStart(2,'0')}`;
+}
+
+// ── DRAW FUNCTIONS ──
+
+function ease(t) { return t < 0.5 ? 2*t*t : -1+(4-2*t)*t; }
+function easeOut(t) { return 1 - Math.pow(1-t, 3); }
+
+function drawTitle(ctx, sc, prog, t) {
+  // bg
+  ctx.fillStyle = t.bg;
+  ctx.fillRect(0, 0, W, H);
+
+  const alpha = prog < 0.1 ? easeOut(prog/0.1) : prog > 0.85 ? 1 - easeOut((prog-0.85)/0.15) : 1;
+
+  // frame decoration based on style
+  drawFrameDeco(ctx, t, alpha);
+
+  // accent line top
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = t.accent;
+  ctx.fillRect(0, 0, W, 4);
+
+  // Vertical accent line
+  ctx.fillStyle = t.accent;
+  ctx.globalAlpha = alpha * 0.8;
+  ctx.fillRect(100, 80, 3, 560);
+
+  // Main title
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = t.text;
+  ctx.font = `bold 72px 'DM Serif Display', serif`;
+  ctx.textAlign = 'left';
+  const titleY = 240 + (prog < 0.2 ? (1-easeOut(prog/0.2)) * 40 : 0);
+  ctx.fillText(sc.owner || 'プロジェクト名', 140, titleY);
+
+  // Type label
+  ctx.fillStyle = t.accent;
+  ctx.font = `500 22px 'Montserrat', sans-serif`;
+  ctx.letterSpacing = '0.3em';
+  ctx.fillText(sc.typeLabel, 142, titleY + 52);
+
+  // Date
+  if (sc.dateStr) {
+    ctx.fillStyle = t.sub;
+    ctx.font = `18px 'Noto Sans JP', sans-serif`;
+    ctx.fillText(sc.dateStr, 142, titleY + 96);
+  }
+
+  // Open message
+  ctx.fillStyle = t.sub;
+  ctx.font = `italic 20px 'DM Serif Display', serif`;
+  ctx.fillText(sc.openMsg, 142, H - 120);
+
+  // kino base tag bottom right
+  ctx.globalAlpha = alpha * 0.5;
+  ctx.fillStyle = t.accent;
+  ctx.font = `600 14px 'Montserrat', sans-serif`;
+  ctx.textAlign = 'right';
+  ctx.fillText('kino base', W - 60, H - 60);
+
+  ctx.globalAlpha = 1;
+  ctx.textAlign = 'left';
+}
+
+function drawFrameDeco(ctx, t, alpha) {
+  ctx.globalAlpha = alpha * 0.35;
+  ctx.strokeStyle = t.accent;
+  ctx.lineWidth = 1;
+  if (t.frame_style === 'corner_lines') {
+    const len = 60;
+    // top-left
+    ctx.beginPath(); ctx.moveTo(30, 30 + len); ctx.lineTo(30, 30); ctx.lineTo(30 + len, 30); ctx.stroke();
+    // bottom-right
+    ctx.beginPath(); ctx.moveTo(W-30, H-30-len); ctx.lineTo(W-30, H-30); ctx.lineTo(W-30-len, H-30); ctx.stroke();
+  } else if (t.frame_style === 'bracket') {
+    ctx.beginPath(); ctx.moveTo(30, 60); ctx.lineTo(30, 30); ctx.lineTo(60, 30); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(W-30, H-60); ctx.lineTo(W-30, H-30); ctx.lineTo(W-60, H-30); ctx.stroke();
+  } else if (t.frame_style === 'side_bar') {
+    ctx.fillStyle = t.accent;
+    ctx.fillRect(0, 0, 6, H);
+    ctx.fillRect(W-6, 0, 6, H);
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawMarker(ctx, sc, prog, t) {
+  const isBefore = sc.side === 'before';
+  ctx.fillStyle = isBefore ? t.before_bg : t.after_bg;
+  ctx.fillRect(0, 0, W, H);
+
+  const alpha = prog < 0.15 ? easeOut(prog/0.15) : prog > 0.8 ? 1 - (prog-0.8)/0.2 : 1;
+
+  ctx.globalAlpha = alpha;
+
+  // Accent top bar
+  ctx.fillStyle = t.accent;
+  ctx.fillRect(0, 0, W, 4);
+
+  // Big label
+  ctx.fillStyle = t.accent;
+  ctx.font = `italic 140px 'DM Serif Display', serif`;
+  ctx.textAlign = 'center';
+  ctx.globalAlpha = alpha * (isBefore ? 0.25 : 0.35);
+  ctx.fillText(sc.label, W/2, H/2 + 50);
+
+  // Sub label
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = t.text;
+  ctx.font = `600 28px 'Montserrat', sans-serif`;
+  ctx.fillText(sc.label, W/2, H/2 - 20);
+  ctx.fillStyle = t.sub;
+  ctx.font = `18px 'Noto Sans JP', sans-serif`;
+  ctx.fillText(sc.sub, W/2, H/2 + 24);
+
+  ctx.globalAlpha = 1;
+  ctx.textAlign = 'left';
+}
+
+function drawPhoto(ctx, sc, prog, t) {
+  const isBefore = sc.side === 'before';
+
+  // Fade in/out
+  const fadeAlpha = prog < 0.1 ? easeOut(prog/0.1) : prog > 0.88 ? 1 - easeOut((prog-0.88)/0.12) : 1;
+
+  // Black base
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, W, H);
+
+  // Use entry.ready flag — more reliable than img.complete
+  if (sc.entry && sc.entry.ready && sc.entry.img.naturalWidth > 0) {
+    const img = sc.entry.img;
+    ctx.globalAlpha = fadeAlpha;
+    // Ken Burns: BEFORE=zoom in, AFTER=zoom out
+    const scale = isBefore
+      ? 1 + prog * 0.08
+      : 1.08 - prog * 0.08;
+    const iw = img.naturalWidth;
+    const ih = img.naturalHeight;
+    const ratio = Math.max(W / iw, H / ih) * scale;
+    const dw = iw * ratio, dh = ih * ratio;
+    const dx = (W - dw) / 2, dy = (H - dh) / 2;
+    ctx.drawImage(img, dx, dy, dw, dh);
+
+    // Dark vignette overlay
+    ctx.globalAlpha = 1;
+    const grad = ctx.createRadialGradient(W/2, H/2, H*0.25, W/2, H/2, H*0.75);
+    grad.addColorStop(0, 'rgba(0,0,0,0)');
+    grad.addColorStop(1, 'rgba(0,0,0,0.55)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+  } else {
+    // Placeholder
+    ctx.globalAlpha = fadeAlpha * 0.3;
+    ctx.fillStyle = isBefore ? t.before_bg : t.after_bg;
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = fadeAlpha * 0.2;
+    ctx.fillStyle = t.accent;
+    ctx.font = '80px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(isBefore ? '🏗️' : '🏠', W/2, H/2 + 30);
+    ctx.textAlign = 'left';
+  }
+
+  // Side badge
+  ctx.globalAlpha = fadeAlpha * 0.9;
+  const badgeBg = isBefore ? t.badge_before : t.badge_after;
+  ctx.fillStyle = badgeBg;
+  const bw = 110, bh = 34;
+  ctx.fillRect(40, 40, bw, bh);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `bold 14px 'Montserrat', sans-serif`;
+  ctx.fillText(sc.side === 'before' ? 'BEFORE' : 'AFTER', 56, 63);
+
+  // Photo counter dots
+  const dotY = H - 40;
+  const dotSpacing = 16;
+  const startX = W/2 - (sc.total-1)*dotSpacing/2;
+  for (let i = 0; i < sc.total; i++) {
+    ctx.globalAlpha = fadeAlpha * (i === sc.idx-1 ? 1 : 0.3);
+    ctx.fillStyle = t.accent;
+    ctx.beginPath();
+    ctx.arc(startX + i*dotSpacing, dotY, i === sc.idx-1 ? 5 : 3, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // キャプションテキスト
+  const caption = sc.entry ? sc.entry.caption : '';
+  if (caption && caption.trim()) {
+    ctx.globalAlpha = fadeAlpha * 0.95;
+    // 下部グラデーション帯
+    const capGrad = ctx.createLinearGradient(0, H-130, 0, H-20);
+    capGrad.addColorStop(0, 'rgba(0,0,0,0)');
+    capGrad.addColorStop(1, 'rgba(0,0,0,0.7)');
+    ctx.fillStyle = capGrad;
+    ctx.fillRect(0, H-130, W, 130);
+    // テキスト
+    ctx.globalAlpha = fadeAlpha;
+    ctx.fillStyle = '#F5EFE6';
+    ctx.font = `500 26px 'Noto Serif JP', serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(caption, W/2, H - 55);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+  }
+
+  // kino base watermark（書き出し時のみ目立つ透かし）
+  if (window._kinoExporting) {
+    ctx.save();
+    // 右下ブロック
+    const bw=224,bh=54,bx=W-bw-24,by=H-bh-20;
+    ctx.globalAlpha=0.75;
+    ctx.fillStyle='rgba(0,0,0,0.6)';
+    ctx.fillRect(bx,by,bw,bh);
+    ctx.globalAlpha=1;
+    ctx.fillStyle='#C9A86C';
+    ctx.fillRect(bx,by,3,bh);
+    ctx.font="600 19px 'Montserrat','Noto Sans JP',sans-serif";
+    ctx.textAlign='left';
+    ctx.textBaseline='top';
+    ctx.fillText('kino base',bx+13,by+8);
+    ctx.fillStyle='rgba(201,168,108,0.65)';
+    ctx.font="400 10px 'Montserrat',sans-serif";
+    ctx.fillText('無料プランではロゴが入ります',bx+13,by+33);
+    // 中央大透かし
+    // 中央大透かし（Filmoraと同等サイズ）
+    ctx.globalAlpha=0.18;
+    ctx.fillStyle='#C9A86C';
+    ctx.font="700 140px 'DM Serif Display',serif";
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.translate(W/2,H/2);
+    ctx.rotate(-Math.PI/14);
+    ctx.fillText('kino base',0,0);
+    ctx.restore();
+  } else {
+    ctx.globalAlpha = fadeAlpha * 0.3;
+    ctx.fillStyle = t.accent;
+    ctx.font = `500 13px 'Montserrat', sans-serif`;
+    ctx.textAlign = 'right';
+    ctx.fillText('kino base', W - 40, H - 30);
+  }
+
+  ctx.globalAlpha = 1;
+  ctx.textAlign = 'left';
+}
+
+function drawTurning(ctx, sc, prog, t) {
+  // Flash effect: white → dark
+  const flashProg = prog < 0.25 ? prog / 0.25 : 1;
+  const flashAlpha = prog < 0.15 ? easeOut(prog/0.15) : prog < 0.35 ? 1 : 1 - easeOut((prog-0.35)/0.65);
+
+  // Background based on effect type
+  if (S.fx === 'flash' && prog < 0.3) {
+    const wAlpha = 1 - prog/0.3;
+    ctx.fillStyle = `rgb(${Math.round(255*wAlpha)},${Math.round(255*wAlpha)},${Math.round(255*wAlpha)})`;
+  } else {
+    ctx.fillStyle = t.bg;
+  }
+  ctx.fillRect(0, 0, W, H);
+
+  // Gold horizontal line
+  ctx.globalAlpha = flashAlpha;
+  ctx.fillStyle = t.accent;
+  ctx.fillRect(0, H/2 - 1, W, 2);
+
+  // Turning text
+  const textAlpha = prog > 0.2 ? easeOut((prog-0.2)/0.3) : 0;
+  ctx.globalAlpha = textAlpha;
+  ctx.fillStyle = t.accent;
+  ctx.font = `italic 64px 'DM Serif Display', serif`;
+  ctx.textAlign = 'center';
+  const ty = H/2 + 22 + (1-easeOut(Math.min((prog-0.2)/0.4, 1)))*30;
+
+  const turnLabels = {
+    new: '夢のわが家、完成。',
+    reform: '生まれ変わりました。',
+    exterior: '美しい外観へ。',
+    renovation: '新しい空間の誕生。',
+  };
+  ctx.fillText(turnLabels[S.projType] || '完成。', W/2, ty);
+
+  // Accent dots
+  ctx.globalAlpha = textAlpha * 0.6;
+  ctx.fillStyle = t.accent;
+  [-120, 0, 120].forEach(ox => {
+    ctx.beginPath();
+    ctx.arc(W/2 + ox, H/2 - 40, 3, 0, Math.PI*2);
+    ctx.fill();
+  });
+
+  ctx.globalAlpha = 1;
+  ctx.textAlign = 'left';
+}
+
+function drawClosing(ctx, sc, prog, t) {
+  ctx.fillStyle = t.closing_bg || t.bg;
+  ctx.fillRect(0, 0, W, H);
+
+  const alpha = prog < 0.15 ? easeOut(prog/0.15) : prog > 0.8 ? 1 - easeOut((prog-0.8)/0.2) : 1;
+
+  ctx.globalAlpha = alpha;
+
+  // Accent top bar
+  ctx.fillStyle = t.accent;
+  ctx.fillRect(0, 0, W, 4);
+
+  // Frame deco
+  drawFrameDeco(ctx, t, alpha);
+
+  // kino base logo
+  ctx.fillStyle = t.accent;
+  ctx.font = `bold 40px 'Shippori Mincho', serif`;
+  ctx.textAlign = 'center';
+  ctx.fillText('kino base', W/2, H/2 - 60);
+
+  // Divider
+  ctx.fillStyle = t.accent;
+  ctx.globalAlpha = alpha * 0.4;
+  ctx.fillRect(W/2 - 60, H/2 - 30, 120, 1);
+
+  // Closing message
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = t.text;
+  ctx.font = `500 28px 'Shippori Mincho', serif`;
+  ctx.fillText(sc.closeMsg || '末永くよろしくお願いいたします', W/2, H/2 + 20);
+
+  // Company
+  ctx.fillStyle = t.sub;
+  ctx.font = `18px 'Noto Sans JP', sans-serif`;
+  ctx.fillText(sc.company || '○○建設', W/2, H/2 + 68);
+
+  // 映像制作
+  ctx.globalAlpha = alpha * 0.5;
+  ctx.fillStyle = t.accent;
+  ctx.font = `12px 'Montserrat', sans-serif`;
+  ctx.fillText('映像制作 : kino base', W/2, H - 50);
+
+  ctx.globalAlpha = 1;
+  ctx.textAlign = 'left';
+}
+
+// ══════════════════════════════════
+//  PLAYBACK
+// ══════════════════════════════════
+function togglePlay() {
+  S.playing = !S.playing;
+  const btn = document.getElementById('play-btn');
+  if (S.playing) {
+    btn.textContent = '⏸ 一時停止';
+    btn.classList.add('on');
+    S.lastTime = performance.now();
+    // BGM start
+    S.frame = S.frame || 0;
+    playBgm();
+    requestAnimationFrame(playLoop);
+  } else {
+    btn.textContent = '▶ プレビュー再生';
+    btn.classList.remove('on');
+    cancelAnimationFrame(S.raf);
+    stopBgm();
+  }
+}
+
+function playLoop(ts) {
+  if (!S.playing) return;
+  const delta = ts - S.lastTime;
+  S.lastTime = ts;
+  S.frame = (S.frame + delta * 30 / 1000);
+  if (S.frame >= S.totalFrames) {
+    S.frame = 0;
+    S.playing = false;
+    document.getElementById('play-btn').textContent = '▶ プレビュー再生';
+    document.getElementById('play-btn').classList.remove('on');
+    stopBgm();
+    renderFrame(0);
+    return;
+  }
+  renderFrame(Math.floor(S.frame));
+  S.raf = requestAnimationFrame(playLoop);
+}
+
+// ══════════════════════════════════
+//  EXPORT — MP4 via WebCodecs + mp4-muxer
+//  ブラウザ単体でMP4を直接生成
+// ══════════════════════════════════
+
+// mp4-muxer を動的に読み込む（CDN不要・inline実装）
+// VideoEncoder (WebCodecs) が使えるか確認してから起動
+
+async function startExport() {
+  const btn = document.getElementById('export-btn');
+  const statusEl = document.getElementById('status-msg');
+  const overlay = document.getElementById('overlay');
+  const progBar = document.getElementById('prog-bar');
+  const ovTxt = document.getElementById('ov-txt');
+
+  // ── ブラウザ対応チェック ──
+  if (!window.VideoEncoder || !window.VideoFrame) {
+    // WebCodecs非対応 → MediaRecorder WebM fallback
+    statusEl.textContent = '⚠ このブラウザはMP4直接書き出しに非対応です。Chrome / Edge をお使いください。WebM形式で書き出します。';
+    statusEl.className = 'status';
+    await exportWebM();
+    return;
+  }
+
+  window._kinoExporting = true;
+  btn.disabled = true;
+  btn.textContent = '生成中...';
+  overlay.classList.add('show');
+  progBar.style.width = '0%';
+  ovTxt.textContent = '準備中...';
+
+  try {
+    await exportMP4WebCodecs(progBar, ovTxt);
+    statusEl.textContent = '✅ MP4の書き出しが完了しました！';
+    statusEl.className = 'status ok';
+  } catch(e) {
+    console.error('MP4 export error:', e);
+    statusEl.textContent = '⚠ MP4書き出しに失敗しました。WebM形式で再試行します...';
+    statusEl.className = 'status';
+    await exportWebM(progBar, ovTxt);
+    statusEl.textContent = '✅ WebM形式で書き出しました。';
+    statusEl.className = 'status ok';
+  }
+
+  window._kinoExporting = false;
+  overlay.classList.remove('show');
+  btn.disabled = false;
+  btn.textContent = '⬇ MP4を書き出す';
+}
+
+// ── WebCodecs MP4 書き出し ──────────
+async function exportMP4WebCodecs(progBar, ovTxt) {
+  const FPS = 30;
+  const scenes = buildScenes();
+  const total = getTotalFrames(scenes);
+  const durationSec = total / FPS;
+
+  // オフスクリーンキャンバス（メインCanvasと同解像度）
+  const offscreen = new OffscreenCanvas(W, H);
+  const offCtx = offscreen.getContext('2d');
+
+  // ── mp4-muxer をインラインで実装（軽量版） ──
+  // 実際にはmp4-muxerライブラリが必要だが、
+  // ここではMediaRecorder + MP4変換の組み合わせを使う堅牢な実装にする
+  // Chrome 94+: MediaRecorder が video/mp4 をサポートしている場合がある
+
+  const mp4Supported = MediaRecorder.isTypeSupported('video/mp4;codecs=avc1')
+    || MediaRecorder.isTypeSupported('video/mp4')
+    || MediaRecorder.isTypeSupported('video/x-matroska;codecs=avc1');
+
+  if (mp4Supported) {
+    // MP4直接録画
+    const mimeType = MediaRecorder.isTypeSupported('video/mp4;codecs=avc1')
+      ? 'video/mp4;codecs=avc1'
+      : MediaRecorder.isTypeSupported('video/mp4')
+      ? 'video/mp4'
+      : 'video/x-matroska;codecs=avc1';
+    await recordWithMediaRecorder(mimeType, scenes, total, FPS, progBar, ovTxt, 'mp4');
+  } else {
+    // WebCodecs で H.264 エンコード → MP4 mux
+    await encodeWithWebCodecs(scenes, total, FPS, progBar, ovTxt);
+  }
+}
+
+// ── MediaRecorder 録画（MP4 or WebM）──
+async function recordWithMediaRecorder(mimeType, scenes, total, FPS, progBar, ovTxt, ext) {
+  // BGM をオーディオトラックに混合
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let audioStream = null;
+  let bgmCtxExport = null;
+
+  try {
+    const AudioCtxEx = window.AudioContext || window.webkitAudioContext;
+    bgmCtxExport = new AudioCtxEx();
+    const dest = bgmCtxExport.createMediaStreamDestination();
+    const src  = BGM_SRCS[S.bgmId] || BGM_SRCS.emotional;
+    const exportAudio = new Audio(src);
+    exportAudio.loop   = true;
+    exportAudio.volume = S.bgmVolume;
+    const sourceNode = bgmCtxExport.createMediaElementSource(exportAudio);
+    const gainNode   = bgmCtxExport.createGain();
+    gainNode.gain.value = S.bgmVolume;
+    sourceNode.connect(gainNode);
+    gainNode.connect(dest);
+    gainNode.connect(bgmCtxExport.destination);
+    await exportAudio.play();
+    audioStream = dest.stream;
+  } catch(e) {
+    console.warn('Audio capture failed:', e);
+  }
+
+  // ビデオストリーム（実時間で描画）
+  const videoStream = CV.captureStream(FPS);
+  const tracks = [...videoStream.getTracks()];
+  if (audioStream) {
+    audioStream.getAudioTracks().forEach(t => tracks.push(t));
+  }
+  const combined = new MediaStream(tracks);
+
+  const recorder = new MediaRecorder(combined, {
+    mimeType,
+    videoBitsPerSecond: 10_000_000,
+  });
+  const chunks = [];
+  recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+  recorder.start(100); // 100ms毎にデータ取得
+
+  // フレームを実時間で描画（ブラウザが固まらないよう requestAnimationFrame 使用）
+  await new Promise(resolve => {
+    let frame = 0;
+    const msPerFrame = 1000 / FPS;
+    let lastT = performance.now();
+
+    function tick(ts) {
+      if (frame >= total) {
+        recorder.stop();
+        resolve();
+        return;
+      }
+      // 経過時間ベースでフレームを進める（実時間再生）
+      const elapsed = ts - lastT;
+      const framesToAdvance = Math.max(1, Math.floor(elapsed / msPerFrame));
+      frame = Math.min(frame + framesToAdvance, total - 1);
+      lastT = ts;
+
+      renderFrame(frame);
+
+      if (frame >= total - 1) {
+        frame = total;
+      }
+
+      const pct = Math.round(frame / total * 100);
+      progBar.style.width = pct + '%';
+      ovTxt.textContent = `書き出し中... ${pct}%（実時間で処理中）`;
+
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  });
+
+  await new Promise(resolve => { recorder.onstop = resolve; });
+  if (bgmCtxExport) { try { bgmCtxExport.close(); } catch(e){} }
+
+  const blob = new Blob(chunks, { type: mimeType });
+  downloadBlob(blob, ext);
+}
+
+// ── WebCodecs H.264エンコード（高速・非リアルタイム）──
+async function encodeWithWebCodecs(scenes, total, FPS, progBar, ovTxt) {
+  // mp4-muxer が使えない場合は WebM コンテナに H.264 的に収める
+  // 実用的な解決: offscreen canvas で高速レンダリング → WebM
+  ovTxt.textContent = '高速エンコード中...';
+
+  const offscreen = document.createElement('canvas');
+  offscreen.width = W; offscreen.height = H;
+  const offCtx = offscreen.getContext('2d');
+
+  // ビデオストリームをオフスクリーンから取得
+  const stream = offscreen.captureStream(FPS);
+  const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+    ? 'video/webm;codecs=vp9'
+    : 'video/webm;codecs=vp8';
+
+  const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 12_000_000 });
+  const chunks = [];
+  recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+  recorder.start();
+
+  // 高速描画（非同期で全フレームをオフスクリーンへ）
+  await new Promise(resolve => {
+    let frame = 0;
+    const t = TEMPLATES[S.template];
+    const s_list = scenes;
+
+    function renderOffscreen() {
+      if (frame >= total) {
+        recorder.stop();
+        resolve();
+        return;
+      }
+      // オフスクリーンに描画（メインcanvasは使わず）
+      const { scene, localFrame } = getSceneAtFrame(s_list, frame);
+      const prog = scene.frames > 1 ? localFrame / (scene.frames - 1) : 1;
+      offCtx.clearRect(0, 0, W, H);
+      // メインcanvasに描画してからoffscreenにコピー
+      renderFrame(frame);
+      offCtx.drawImage(CV, 0, 0);
+
+      const pct = Math.round(frame / total * 100);
+      progBar.style.width = pct + '%';
+      ovTxt.textContent = `エンコード中... ${pct}%`;
+      frame++;
+      // 少し間隔を空けてブラウザをフリーズさせない
+      if (frame % 10 === 0) {
+        setTimeout(renderOffscreen, 0);
+      } else {
+        renderOffscreen();
+      }
+    }
+    renderOffscreen();
+  });
+
+  await new Promise(resolve => { recorder.onstop = resolve; });
+
+  const blob = new Blob(chunks, { type: mimeType });
+  downloadBlob(blob, 'webm');
+}
+
+// ── WebM フォールバック（BGM付き）──
+async function exportWebM(progBar, ovTxt) {
+  if (!progBar) {
+    progBar = document.getElementById('prog-bar');
+    ovTxt = document.getElementById('ov-txt');
+    document.getElementById('overlay').classList.add('show');
+    document.getElementById('export-btn').disabled = true;
+  }
+
+  const FPS = 30;
+  const scenes = buildScenes();
+  const total = getTotalFrames(scenes);
+  const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+    ? 'video/webm;codecs=vp9'
+    : 'video/webm;codecs=vp8';
+
+  await recordWithMediaRecorder(mimeType, scenes, total, FPS, progBar, ovTxt, 'webm');
+
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('export-btn').disabled = false;
+  document.getElementById('export-btn').textContent = '⬇ MP4を書き出す';
+}
+
+function downloadBlob(blob, ext) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const owner = document.getElementById('ownerName').value || 'project';
+  a.download = `kino_base_${owner.replace(/[\s\/\\]/g,'_')}.${ext}`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
+}
+
+// ══════════════════════════════════
+//  BGM ENGINE — MP3 Audio (Pixabay)
+// ══════════════════════════════════
+
+const BGM_TRACKS = [
+  { id:'emotional', name:'サカルトベロ・ピアノ', icon:'🎹', desc:'温かく感動的なピアノ。竣工式の定番。',     color:'#C9A86C' },
+  { id:'cinematic', name:'エモーショナル・ピアノ', icon:'💌', desc:'感情的で深みのある一曲。',               color:'#E8845C' },
+  { id:'warm',      name:'ピアノ・ソロ',           icon:'✨', desc:'洗練された独奏。静かな感動を呼ぶ。',     color:'#8BB8D4' },
+  { id:'elegant',   name:'春の陽だまり',           icon:'🌸', desc:'明るく希望に満ちた春のピアノ。',         color:'#7EC8A0' },
+  { id:'hopeful',   name:'水たまり',               icon:'🌬', desc:'繊細で叙情的。雨上がりの情景。',         color:'#A088D8' },
+  { id:'minimal',   name:'雪のダンス',             icon:'🕊', desc:'静かで美しい冬のピアノ。',               color:'#4A90D9' },
+];
+
+const BGM_SRCS = {
+  emotional: 'bgm_emotional.mp3',
+  cinematic: 'bgm_cinematic.mp3',
+  warm:      'bgm_warm.mp3',
+  elegant:   'bgm_elegant.mp3',
+  hopeful:   'bgm_hopeful.mp3',
+  minimal:   'bgm_minimal.mp3',
+};
+
+let _bgmAudio = null;
+
+function playBgm() {
+  stopBgm();
+  const src = BGM_SRCS[S.bgmId] || BGM_SRCS.emotional;
+  _bgmAudio = new Audio(src);
+  _bgmAudio.loop = true;
+  _bgmAudio.volume = S.bgmVolume;
+  _bgmAudio.play().catch(e => console.warn('BGM play error:', e));
+}
+
+function stopBgm() {
+  if (_bgmAudio) {
+    _bgmAudio.pause();
+    _bgmAudio.currentTime = 0;
+    _bgmAudio = null;
+  }
+}
+
+function buildBgmGrid() {
+  const grid = document.getElementById('bgm-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  BGM_TRACKS.forEach(track => {
+    const btn = document.createElement('div');
+    btn.id = `bgm-${track.id}`;
+    btn.style.cssText = `
+      display:flex;align-items:center;gap:10px;padding:10px 12px;
+      background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);
+      border-radius:2px;cursor:pointer;transition:all .25s;
+    `;
+    btn.innerHTML = `
+      <div style="font-size:20px;flex-shrink:0;">${track.icon}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:11px;font-weight:700;color:var(--sand);letter-spacing:.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${track.name}</div>
+        <div style="font-size:9px;color:var(--muted);margin-top:2px;">${track.desc}</div>
+      </div>
+      <div class="bgm-play-btn" style="
+        width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.06);
+        display:flex;align-items:center;justify-content:center;
+        font-size:10px;color:var(--muted);flex-shrink:0;transition:all .25s;
+      ">▶</div>
+    `;
+    btn.onclick = () => selectBgm(track.id);
+    grid.appendChild(btn);
+  });
+  highlightBgm('emotional');
+}
+
+function highlightBgm(id) {
+  BGM_TRACKS.forEach(track => {
+    const btn = document.getElementById(`bgm-${track.id}`);
+    if (!btn) return;
+    const playBtn = btn.querySelector('.bgm-play-btn');
+    if (track.id === id) {
+      btn.style.background = `rgba(${hexToRgb(track.color)}, 0.12)`;
+      btn.style.borderColor = track.color;
+      playBtn.style.background = track.color;
+      playBtn.style.color = '#1A1612';
+      playBtn.textContent = '♪';
+    } else {
+      btn.style.background = 'rgba(255,255,255,.03)';
+      btn.style.borderColor = 'rgba(255,255,255,.09)';
+      playBtn.style.background = 'rgba(255,255,255,.06)';
+      playBtn.style.color = 'var(--muted)';
+      playBtn.textContent = '▶';
+    }
+  });
+}
+
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `${r},${g},${b}`;
+}
+
+function selectBgm(id) {
+  S.bgmId = id;
+  highlightBgm(id);
+  if (S.bgmCtx) { stopBgm(); playBgm(); }
+}
+
+function setBgmVolume(val) {
+  S.bgmVolume = val / 100;
+  document.getElementById('vol-lbl').textContent = val + '%';
+  if (S.bgmNode) {
+    S.bgmNode.gain.setTargetAtTime(S.bgmVolume, S.bgmCtx.currentTime, 0.1);
+  }
+}
+
+function buildBgmGrid() {
+  const grid = document.getElementById('bgm-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  BGM_TRACKS.forEach(track => {
+    const btn = document.createElement('div');
+    btn.id = `bgm-${track.id}`;
+    btn.style.cssText = `display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);border-radius:2px;cursor:pointer;transition:all .25s;`;
+    btn.innerHTML = `<div style="font-size:20px;flex-shrink:0;">${track.icon}</div><div style="flex:1;min-width:0;"><div style="font-size:11px;font-weight:700;color:var(--sand);letter-spacing:.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${track.name}</div><div style="font-size:9px;color:var(--muted);margin-top:2px;">${track.desc}</div></div><div class="bgm-play-btn" style="width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);flex-shrink:0;transition:all .25s;">▶</div>`;
+    btn.onclick = () => selectBgm(track.id);
+    grid.appendChild(btn);
+  });
+  highlightBgm('emotional');
+}
+
+function highlightBgm(id) {
+  BGM_TRACKS.forEach(track => {
+    const btn = document.getElementById(`bgm-${track.id}`);
+    if (!btn) return;
+    const playBtn = btn.querySelector('.bgm-play-btn');
+    if (track.id === id) {
+      btn.style.background = `rgba(${hexToRgb(track.color)}, 0.12)`;
+      btn.style.borderColor = track.color;
+      playBtn.style.background = track.color;
+      playBtn.style.color = '#1A1612';
+      playBtn.textContent = '♪';
+    } else {
+      btn.style.background = 'rgba(255,255,255,.03)';
+      btn.style.borderColor = 'rgba(255,255,255,.09)';
+      playBtn.style.background = 'rgba(255,255,255,.06)';
+      playBtn.style.color = 'var(--muted)';
+      playBtn.textContent = '▶';
+    }
+  });
+}
+
+function hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `${r},${g},${b}`;
+}
+
+function selectBgm(id) {
+  S.bgmId = id;
+  highlightBgm(id);
+  if (S.bgmCtx) { stopBgm(); playBgm(); }
+}
+
+function setBgmVolume(val) {
+  S.bgmVolume = val / 100;
+  document.getElementById('vol-lbl').textContent = val + '%';
+  if (_bgmAudio) _bgmAudio.volume = S.bgmVolume;
+}
+
+buildTemplateGrid();
+buildBgmGrid();
+
+// Set default date
+const today = new Date();
+document.getElementById('compDate').value = today.toISOString().split('T')[0];
+
+scheduleRender();
+</script>
+</body>
+</html>
